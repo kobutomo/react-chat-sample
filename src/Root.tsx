@@ -4,9 +4,17 @@
 import * as React from "react";
 import { Provider } from "react-redux";
 import App from "./containers/App";
+import { Store } from "redux";
 
-export default ({ store }) => (
-  <Provider store={store}>
-    <App />
-  </Provider>
-);
+type Props = {
+  store: Store<{}>;
+};
+const Root: React.FC<Props> = ({ store }) => {
+  return (
+    <Provider store={store as any}>
+      <App />
+    </Provider>
+  );
+};
+
+export default Root;
