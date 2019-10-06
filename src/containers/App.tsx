@@ -187,7 +187,7 @@ const Container = styled.div`
     margin-bottom:20px;
     text-shadow: 0px 0px 5px rgba(0, 81, 255, 0.231);
   }
-  >div{
+  > div{
     height:100%;
   }
 `;
@@ -303,7 +303,7 @@ const Message = styled.li`
       right: ${(props: { isOwnMessage: boolean }) => props.isOwnMessage ? '-26px' : 'auto'};
       margin-top: -15px;
       border: 15px solid transparent;
-     border-left: 30px solid #f0f0f0;
+      border-left: 30px solid #f0f0f0;
       z-index: 0;
       -webkit-transform: ${(props: { isOwnMessage: boolean }) => props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'};
       transform: ${(props: { isOwnMessage: boolean }) => props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'};

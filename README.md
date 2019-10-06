@@ -1,27 +1,25 @@
-auto-scale/react-redux-typescript-boilerplate
+react-chat-sample
 ====
 
 ## Overview
 
-AutoScale で使っている React 環境を簡単に作成できるボイラープレートです。
-
-それぞれのライブラリのごく簡単なサンプルコードつきなので、高速に開発を開始できます。
-
-以下を使った開発を簡単に開始することができます。
-
+以下使用したライブラリ
 * React
 * Redux (react-redux)
 * redux-thunk
 * TypeScript
 * styled-component
-* immutable.js
 * webpack
+
+## 制作にかかった時間について
+
+進捗.txtをご参照ください。
 
 ## How to install
 
 ```sh
-git clone git@github.com:auto-scale/react-redux-typescript-boilerplate.git
-cd react-redux-typescript-boilerplate
+git clone git@github.com:kobutomo/react-chat-sample.git
+cd react-chat-sample
 yarn install
 ```
 
@@ -31,5 +29,3 @@ yarn install
 yarn watch
 open public/index.html
 ```
-
-最小限の構成となっているため、Web サーバの機能は含まれていません。
