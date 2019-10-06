@@ -8,7 +8,7 @@
   "license": "UNLICENSED",
   "homepage": "https://autoscale.jp/",
   "dependencies": {
-    "firebase": "6.2.0",
+    "firebase": "^7.1.0",
     "immutable": "^3.8.2",
     "moment": "^2.24.0",
     "react": "16.8.6",
@@ -22,6 +22,7 @@
     "webpack": "4.8.3"
   },
   "devDependencies": {
+    "@types/firebase": "^3.2.1",
     "@types/react": "^16.8.20",
     "@types/react-dom": "^16.8.4",
     "@types/react-redux": "^7.1.4",

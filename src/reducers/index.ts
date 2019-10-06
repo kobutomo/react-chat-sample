@@ -3,7 +3,8 @@
 
 import { combineReducers } from "redux";
 import app from "./app";
+import { RootState } from "./app";
 
-export default combineReducers({
+export default combineReducers<RootState>({
   app,
 });
