@@ -18,18 +18,7 @@ const NormalizeDate = (date: Date) => {
   return MM + '月' + dd + '日' + hh + ':' + mm;
 };
 
-
-type DispatchProps = {
-  app_actions: {
-    login?: (payload: LoginPayload) => void;
-    submitMsg?: (payload: LoginPayload) => void;
-    fetch: () => void;
-    createMessage: (payload: CreateMessagePayload) => void;
-    setName: (payload: SetNamePayload) => void;
-  };
-};
-
-type Props = AppState & DispatchProps;
+type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
 
 // ログインフォーム
 const Login: React.FC<Props> = (props) => {
@@ -163,7 +152,7 @@ const mapStateToProps = (state: RootState) => {
 // 型が解決できなかったのでひとつずつやってます。
 const mapDispatchToProps = (
   dispatch: ThunkDispatch<AppState, undefined, AppAction> & Dispatch<AppAction>
-): DispatchProps => ({
+) => ({
   app_actions: {
     fetch: () => {
       dispatch(fetchMsg());
