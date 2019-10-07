@@ -31,7 +31,7 @@ type DispatchProps = {
 
 type Props = AppState & DispatchProps;
 
-// ログイン画面
+// ログインフォーム
 const Login: React.FC<Props> = (props) => {
   // 入力中かどうか
   const isEditing = props.nameForLogin.length > 0;
@@ -57,16 +57,31 @@ const Login: React.FC<Props> = (props) => {
   );
 };
 
-// チャット本体
-const Chat: React.FC<Props> = (props) => {
-  // firebaseリアルタイムデータベースのリスナーを登録
-  // データベースに変更があるたびにfetchする
-  useEffect(() => {
-    const messageRef = firebase.database().ref('messages');
-    messageRef.on("value", async () => {
-      props.app_actions.fetch();
-    });
-  }, [props.app_actions]);
+// メッセージリスト
+const MessageList: React.FC<Props> = (props) => {
+  return (
+    <Messages>
+      {props.messages.map(msg => {
+        return (
+          <Message
+            // 自分のメッセージかどうかでスタイルを変える
+            isOwnMessage={msg.name === props.name}
+            key={msg.timestamp}
+          >
+            <p className="name">{msg.name}</p>
+            <div>
+              <p className="message">{msg.message}</p>
+              <p className="time">{NormalizeDate(new Date(msg.timestamp))}</p>
+            </div>
+          </Message>
+        );
+      })}
+    </Messages>
+  );
+};
+
+// メッセージ入力欄
+const Editor: React.FC<Props> = (props) => {
 
   const inputEl = useRef<HTMLTextAreaElement>(null);
 
@@ -82,49 +97,52 @@ const Chat: React.FC<Props> = (props) => {
   const isEditing = props.newMessage.length > 0;
 
   return (
+    <InputArea>
+      <Label isEditing={isEditing}>
+        <span>{isEditing ? "Ctr+Enterで送信" : "メッセージを入力"}</span>
+        <textarea
+          onChange={e => {
+            props.app_actions.createMessage({ message: e.target.value });
+          }}
+          onKeyDown={e => {
+            // ctr + enterで送信する
+            if (e.ctrlKey && e.keyCode === 13) {
+              submitMessage();
+              e.currentTarget.value = "";
+            }
+          }}
+          ref={inputEl}
+        ></textarea>
+      </Label>
+      <SubmitButton onClick={e => {
+        submitMessage();
+        // textareaの内容を消す
+        inputEl.current.value = "";
+      }}
+      >送信</SubmitButton>
+    </InputArea>
+  );
+};
+
+// チャット本体
+const Chat: React.FC<Props> = (props) => {
+  // firebaseリアルタイムデータベースのリスナーを登録
+  // データベースに変更があるたびにfetchする
+  useEffect(() => {
+    const messageRef = firebase.database().ref('messages');
+    messageRef.on("value", async () => {
+      props.app_actions.fetch();
+    });
+  }, [props.app_actions]);
+
+  return (
     <div>
-      <Messages>
-        {props.messages.map(msg => {
-          return (
-            <Message
-              // 自分のメッセージかどうかでスタイルを変える
-              isOwnMessage={msg.name === props.name}
-              key={msg.timestamp}
-            >
-              <p className="name">{msg.name}</p>
-              <div>
-                <p className="message">{msg.message}</p>
-                <p className="time">{NormalizeDate(new Date(msg.timestamp))}</p>
-              </div>
-            </Message>
-          );
-        })}
-      </Messages>
-      <InputArea>
-        <Label isEditing={isEditing}>
-          <span>{isEditing ? "Ctr+Enterで送信" : "メッセージを入力"}</span>
-          <textarea
-            onChange={e => {
-              props.app_actions.createMessage({ message: e.target.value });
-            }}
-            onKeyDown={e => {
-              // ctr + enterで送信する
-              if (e.ctrlKey && e.keyCode === 13) {
-                submitMessage();
-                e.currentTarget.value = "";
-              }
-            }}
-            ref={inputEl}
-          ></textarea>
-        </Label>
-        <SubmitButton onClick={e => {
-          submitMessage();
-          // textareaの内容を消す
-          inputEl.current.value = "";
-        }}
-        >送信</SubmitButton>
-      </InputArea>
-    </div>
+      <MessageList {...props} />
+      {props.name
+        ? <Editor {...props} />
+        : <Login {...props} />
+      }
+    </div >
   );
 };
 
@@ -132,10 +150,7 @@ export const App: React.FC<Props> = (props: Props) => {
   return (
     <Container>
       <h1>React-Chat</h1>
-      {props.name
-        ? <Chat {...props}></Chat>
-        : <Login {...props}></Login>
-      }
+      <Chat {...props}></Chat>
     </Container>
   );
 };
@@ -193,9 +208,9 @@ const Container = styled.div`
 `;
 
 const LoginWrap = styled.div`
+  margin-top: 40px;
   display:flex;
   width:100%;
-  height:100%;
   justify-content:center;
   align-items:center;
   > div{
@@ -214,24 +229,18 @@ const LoginWrap = styled.div`
   }
   input{
     width:100%;
-    -moz-appearance: none;
-    -webkit-appearance: none;
     display:block;
-    appearance: none;
     background-color: #f0f0f0;
     background-image: none;
     letter-spacing: 0.05em;
-    border: none;
-    border-radius: 0;
     color: inherit;
-    font-family: inherit;
-    font-size: 1em;
+    font-size: 1.5rem;
     padding: 18px 15px 15px;
     box-sizing: border-box;
     resize:none;
   }
   button{
-    margin: 40px auto 0;
+    margin: 30px auto 0;
   }
 `;
 
@@ -239,6 +248,7 @@ const Messages = styled.ul`
   display: flex;
   flex-wrap: wrap;
   height: calc(100% - 230px);
+  background: #fafafa;
   overflow-y:scroll;
   padding: 30px;
   ::-webkit-scrollbar {
@@ -332,19 +342,13 @@ const Label = styled.label`
   }
   textarea{
     width:100%;
-    -moz-appearance: none;
-    -webkit-appearance: none;
     display:block;
-    appearance: none;
     background-color: #f0f0f0;
     background-image: none;
     letter-spacing: 0.05em;
-    border: none;
-    border-radius: 0;
     height: 150px;
     color: inherit;
-    font-family: inherit;
-    font-size: 1em;
+    font-size: 1.5rem;
     padding: 25px 15px;
     box-sizing: border-box;
     resize:none;

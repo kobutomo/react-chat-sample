@@ -83707,7 +83707,7 @@ var NormalizeDate = function (date) {
     var mm = ('0' + date.getMinutes()).slice(-2);
     return MM + '月' + dd + '日' + hh + ':' + mm;
 };
-// ログイン画面
+// ログインフォーム
 var Login = function (props) {
     // 入力中かどうか
     var isEditing = props.nameForLogin.length > 0;
@@ -83722,6 +83722,50 @@ var Login = function (props) {
                     props.app_actions.login({ login_user_name: props.nameForLogin });
                 } }, "\u30ED\u30B0\u30A4\u30F3"))));
 };
+// メッセージリスト
+var MessageList = function (props) {
+    return (React.createElement(Messages, null, props.messages.map(function (msg) {
+        return (React.createElement(Message
+        // 自分のメッセージかどうかでスタイルを変える
+        , { 
+            // 自分のメッセージかどうかでスタイルを変える
+            isOwnMessage: msg.name === props.name, key: msg.timestamp },
+            React.createElement("p", { className: "name" }, msg.name),
+            React.createElement("div", null,
+                React.createElement("p", { className: "message" }, msg.message),
+                React.createElement("p", { className: "time" }, NormalizeDate(new Date(msg.timestamp))))));
+    })));
+};
+// メッセージ入力欄
+var Editor = function (props) {
+    var inputEl = react_1.useRef(null);
+    var submitMessage = function () {
+        var messageRef = firebase.database().ref('messages');
+        messageRef.push({
+            name: props.name,
+            timestamp: Date.now(),
+            message: props.newMessage
+        });
+    };
+    var isEditing = props.newMessage.length > 0;
+    return (React.createElement(InputArea, null,
+        React.createElement(Label, { isEditing: isEditing },
+            React.createElement("span", null, isEditing ? "Ctr+Enterで送信" : "メッセージを入力"),
+            React.createElement("textarea", { onChange: function (e) {
+                    props.app_actions.createMessage({ message: e.target.value });
+                }, onKeyDown: function (e) {
+                    // ctr + enterで送信する
+                    if (e.ctrlKey && e.keyCode === 13) {
+                        submitMessage();
+                        e.currentTarget.value = "";
+                    }
+                }, ref: inputEl })),
+        React.createElement(SubmitButton, { onClick: function (e) {
+                submitMessage();
+                // textareaの内容を消す
+                inputEl.current.value = "";
+            } }, "\u9001\u4FE1")));
+};
 // チャット本体
 var Chat = function (props) {
     // firebaseリアルタイムデータベースのリスナーを登録
@@ -83735,52 +83779,16 @@ var Chat = function (props) {
             });
         }); });
     }, [props.app_actions]);
-    var inputEl = react_1.useRef(null);
-    var submitMessage = function () {
-        var messageRef = firebase.database().ref('messages');
-        messageRef.push({
-            name: props.name,
-            timestamp: Date.now(),
-            message: props.newMessage
-        });
-    };
-    var isEditing = props.newMessage.length > 0;
     return (React.createElement("div", null,
-        React.createElement(Messages, null, props.messages.map(function (msg) {
-            return (React.createElement(Message
-            // 自分のメッセージかどうかでスタイルを変える
-            , { 
-                // 自分のメッセージかどうかでスタイルを変える
-                isOwnMessage: msg.name === props.name, key: msg.timestamp },
-                React.createElement("p", { className: "name" }, msg.name),
-                React.createElement("div", null,
-                    React.createElement("p", { className: "message" }, msg.message),
-                    React.createElement("p", { className: "time" }, NormalizeDate(new Date(msg.timestamp))))));
-        })),
-        React.createElement(InputArea, null,
-            React.createElement(Label, { isEditing: isEditing },
-                React.createElement("span", null, isEditing ? "Ctr+Enterで送信" : "メッセージを入力"),
-                React.createElement("textarea", { onChange: function (e) {
-                        props.app_actions.createMessage({ message: e.target.value });
-                    }, onKeyDown: function (e) {
-                        // ctr + enterで送信する
-                        if (e.ctrlKey && e.keyCode === 13) {
-                            submitMessage();
-                            e.currentTarget.value = "";
-                        }
-                    }, ref: inputEl })),
-            React.createElement(SubmitButton, { onClick: function (e) {
-                    submitMessage();
-                    // textareaの内容を消す
-                    inputEl.current.value = "";
-                } }, "\u9001\u4FE1"))));
+        React.createElement(MessageList, __assign({}, props)),
+        props.name
+            ? React.createElement(Editor, __assign({}, props))
+            : React.createElement(Login, __assign({}, props))));
 };
 exports.App = function (props) {
     return (React.createElement(Container, null,
         React.createElement("h1", null, "React-Chat"),
-        props.name
-            ? React.createElement(Chat, __assign({}, props))
-            : React.createElement(Login, __assign({}, props))));
+        React.createElement(Chat, __assign({}, props))));
 };
 var mapStateToProps = function (state) {
     return state.app;
@@ -83805,12 +83813,12 @@ var mapDispatchToProps = function (dispatch) { return ({
 }); };
 exports["default"] = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(exports.App);
 // スタイル
-var Container = styled_components_1["default"].div(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n  max-width: 800px;\n  margin: 0 auto;\n  height: calc(100vh - 100px);\n  background-color: #fff;\n  margin: 0 auto;\n  padding:30px;\n  border-radius:10px;\n  h1{\n    text-align: center;\n    font-size: 3rem;\n    font-weight: bold;\n    margin-bottom:20px;\n    text-shadow: 0px 0px 5px rgba(0, 81, 255, 0.231);\n  }\n  >div{\n    height:100%;\n  }\n"], ["\n  max-width: 800px;\n  margin: 0 auto;\n  height: calc(100vh - 100px);\n  background-color: #fff;\n  margin: 0 auto;\n  padding:30px;\n  border-radius:10px;\n  h1{\n    text-align: center;\n    font-size: 3rem;\n    font-weight: bold;\n    margin-bottom:20px;\n    text-shadow: 0px 0px 5px rgba(0, 81, 255, 0.231);\n  }\n  >div{\n    height:100%;\n  }\n"])));
-var LoginWrap = styled_components_1["default"].div(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n  display:flex;\n  width:100%;\n  height:100%;\n  justify-content:center;\n  align-items:center;\n  > div{\n    position:relative;\n  }\n  span{\n    position: absolute;\n    width: 200px;\n    cursor: text;\n    font-size:1.5rem;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  input{\n    width:100%;\n    -moz-appearance: none;\n    -webkit-appearance: none;\n    display:block;\n    appearance: none;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    border: none;\n    border-radius: 0;\n    color: inherit;\n    font-family: inherit;\n    font-size: 1em;\n    padding: 18px 15px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n  button{\n    margin: 40px auto 0;\n  }\n"], ["\n  display:flex;\n  width:100%;\n  height:100%;\n  justify-content:center;\n  align-items:center;\n  > div{\n    position:relative;\n  }\n  span{\n    position: absolute;\n    width: 200px;\n    cursor: text;\n    font-size:1.5rem;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  input{\n    width:100%;\n    -moz-appearance: none;\n    -webkit-appearance: none;\n    display:block;\n    appearance: none;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    border: none;\n    border-radius: 0;\n    color: inherit;\n    font-family: inherit;\n    font-size: 1em;\n    padding: 18px 15px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n  button{\n    margin: 40px auto 0;\n  }\n"])), function (props) { return props.isEditing ? '6px' : '20px'; }, function (props) { return props.isEditing ? '1rem' : '1.5rem'; });
-var Messages = styled_components_1["default"].ul(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n  display: flex;\n  flex-wrap: wrap;\n  height: calc(100% - 230px);\n  overflow-y:scroll;\n  padding: 30px;\n  ::-webkit-scrollbar {\n    width: 6px;\n  }\n  ::-webkit-scrollbar-track {\n    border-radius: 30px;\n    background: #eee;\n  }\n  ::-webkit-scrollbar-thumb {\n    border-radius: 30px;\n    background: #b6b6b6;\n  }\n  li + li{\n    margin-top: 20px;\n  }\n"], ["\n  display: flex;\n  flex-wrap: wrap;\n  height: calc(100% - 230px);\n  overflow-y:scroll;\n  padding: 30px;\n  ::-webkit-scrollbar {\n    width: 6px;\n  }\n  ::-webkit-scrollbar-track {\n    border-radius: 30px;\n    background: #eee;\n  }\n  ::-webkit-scrollbar-thumb {\n    border-radius: 30px;\n    background: #b6b6b6;\n  }\n  li + li{\n    margin-top: 20px;\n  }\n"])));
-var Message = styled_components_1["default"].li(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n  display: flex;\n  width: 100%;\n  align-self: flex-start;\n  align-items: flex-start;\n  flex-direction:", ";\n  .name {\n    width: 100px;\n    background-color: #f0f0f0;\n    font-size: 1.3rem;\n    border-radius: 10px;\n    margin: ", ";\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding: 10px;\n  }\n  .time{\n    font-size: 1.2rem;\n    width: 94px;\n    margin: ", ";\n  }\n  div{\n    flex: 1;\n    text-align:", ";\n    flex-direction: ", ";\n    display: flex;\n    align-items: flex-end;\n  }\n  .message{\n    position: relative;\n    text-align: left;\n    white-space:pre-line;\n    border-radius: 10px;\n    padding: 10px 20px;\n    background-color:#f0f0f0;\n    display: inline-block;\n    max-width: 450px;\n    &::before{\n      content: \"\";\n      position: absolute;\n      top: 17px;\n      left: ", ";\n      right: ", ";\n      margin-top: -15px;\n      border: 15px solid transparent;\n     border-left: 30px solid #f0f0f0;\n      z-index: 0;\n      -webkit-transform: ", ";\n      transform: ", ";\n    }\n  }\n"], ["\n  display: flex;\n  width: 100%;\n  align-self: flex-start;\n  align-items: flex-start;\n  flex-direction:", ";\n  .name {\n    width: 100px;\n    background-color: #f0f0f0;\n    font-size: 1.3rem;\n    border-radius: 10px;\n    margin: ", ";\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding: 10px;\n  }\n  .time{\n    font-size: 1.2rem;\n    width: 94px;\n    margin: ", ";\n  }\n  div{\n    flex: 1;\n    text-align:", ";\n    flex-direction: ", ";\n    display: flex;\n    align-items: flex-end;\n  }\n  .message{\n    position: relative;\n    text-align: left;\n    white-space:pre-line;\n    border-radius: 10px;\n    padding: 10px 20px;\n    background-color:#f0f0f0;\n    display: inline-block;\n    max-width: 450px;\n    &::before{\n      content: \"\";\n      position: absolute;\n      top: 17px;\n      left: ", ";\n      right: ", ";\n      margin-top: -15px;\n      border: 15px solid transparent;\n     border-left: 30px solid #f0f0f0;\n      z-index: 0;\n      -webkit-transform: ", ";\n      transform: ", ";\n    }\n  }\n"])), function (props) { return props.isOwnMessage ? 'row-reverse' : 'initial'; }, function (props) { return props.isOwnMessage ? '0 0 0 20px' : '0 20px 0 0'; }, function (props) { return props.isOwnMessage ? '0 10px 0 0' : '0 0 0 10px'; }, function (props) { return props.isOwnMessage ? 'right' : 'left'; }, function (props) { return props.isOwnMessage ? 'row-reverse' : 'initial'; }, function (props) { return props.isOwnMessage ? 'auto' : '-26px'; }, function (props) { return props.isOwnMessage ? '-26px' : 'auto'; }, function (props) { return props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'; }, function (props) { return props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'; });
+var Container = styled_components_1["default"].div(templateObject_1 || (templateObject_1 = __makeTemplateObject(["\n  max-width: 800px;\n  margin: 0 auto;\n  height: calc(100vh - 100px);\n  background-color: #fff;\n  margin: 0 auto;\n  padding:30px;\n  border-radius:10px;\n  h1{\n    text-align: center;\n    font-size: 3rem;\n    font-weight: bold;\n    margin-bottom:20px;\n    text-shadow: 0px 0px 5px rgba(0, 81, 255, 0.231);\n  }\n  > div{\n    height:100%;\n  }\n"], ["\n  max-width: 800px;\n  margin: 0 auto;\n  height: calc(100vh - 100px);\n  background-color: #fff;\n  margin: 0 auto;\n  padding:30px;\n  border-radius:10px;\n  h1{\n    text-align: center;\n    font-size: 3rem;\n    font-weight: bold;\n    margin-bottom:20px;\n    text-shadow: 0px 0px 5px rgba(0, 81, 255, 0.231);\n  }\n  > div{\n    height:100%;\n  }\n"])));
+var LoginWrap = styled_components_1["default"].div(templateObject_2 || (templateObject_2 = __makeTemplateObject(["\n  margin-top: 40px;\n  display:flex;\n  width:100%;\n  justify-content:center;\n  align-items:center;\n  > div{\n    position:relative;\n  }\n  span{\n    position: absolute;\n    width: 200px;\n    cursor: text;\n    font-size:1.5rem;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  input{\n    width:100%;\n    display:block;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    color: inherit;\n    font-size: 1.5rem;\n    padding: 18px 15px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n  button{\n    margin: 30px auto 0;\n  }\n"], ["\n  margin-top: 40px;\n  display:flex;\n  width:100%;\n  justify-content:center;\n  align-items:center;\n  > div{\n    position:relative;\n  }\n  span{\n    position: absolute;\n    width: 200px;\n    cursor: text;\n    font-size:1.5rem;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  input{\n    width:100%;\n    display:block;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    color: inherit;\n    font-size: 1.5rem;\n    padding: 18px 15px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n  button{\n    margin: 30px auto 0;\n  }\n"])), function (props) { return props.isEditing ? '6px' : '20px'; }, function (props) { return props.isEditing ? '1rem' : '1.5rem'; });
+var Messages = styled_components_1["default"].ul(templateObject_3 || (templateObject_3 = __makeTemplateObject(["\n  display: flex;\n  flex-wrap: wrap;\n  height: calc(100% - 230px);\n  background: #fafafa;\n  overflow-y:scroll;\n  padding: 30px;\n  ::-webkit-scrollbar {\n    width: 6px;\n  }\n  ::-webkit-scrollbar-track {\n    border-radius: 30px;\n    background: #eee;\n  }\n  ::-webkit-scrollbar-thumb {\n    border-radius: 30px;\n    background: #b6b6b6;\n  }\n  li + li{\n    margin-top: 20px;\n  }\n"], ["\n  display: flex;\n  flex-wrap: wrap;\n  height: calc(100% - 230px);\n  background: #fafafa;\n  overflow-y:scroll;\n  padding: 30px;\n  ::-webkit-scrollbar {\n    width: 6px;\n  }\n  ::-webkit-scrollbar-track {\n    border-radius: 30px;\n    background: #eee;\n  }\n  ::-webkit-scrollbar-thumb {\n    border-radius: 30px;\n    background: #b6b6b6;\n  }\n  li + li{\n    margin-top: 20px;\n  }\n"])));
+var Message = styled_components_1["default"].li(templateObject_4 || (templateObject_4 = __makeTemplateObject(["\n  display: flex;\n  width: 100%;\n  align-self: flex-start;\n  align-items: flex-start;\n  flex-direction:", ";\n  .name {\n    width: 100px;\n    background-color: #f0f0f0;\n    font-size: 1.3rem;\n    border-radius: 10px;\n    margin: ", ";\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding: 10px;\n  }\n  .time{\n    font-size: 1.2rem;\n    width: 94px;\n    margin: ", ";\n  }\n  div{\n    flex: 1;\n    text-align:", ";\n    flex-direction: ", ";\n    display: flex;\n    align-items: flex-end;\n  }\n  .message{\n    position: relative;\n    text-align: left;\n    white-space:pre-line;\n    border-radius: 10px;\n    padding: 10px 20px;\n    background-color:#f0f0f0;\n    display: inline-block;\n    max-width: 450px;\n    &::before{\n      content: \"\";\n      position: absolute;\n      top: 17px;\n      left: ", ";\n      right: ", ";\n      margin-top: -15px;\n      border: 15px solid transparent;\n      border-left: 30px solid #f0f0f0;\n      z-index: 0;\n      -webkit-transform: ", ";\n      transform: ", ";\n    }\n  }\n"], ["\n  display: flex;\n  width: 100%;\n  align-self: flex-start;\n  align-items: flex-start;\n  flex-direction:", ";\n  .name {\n    width: 100px;\n    background-color: #f0f0f0;\n    font-size: 1.3rem;\n    border-radius: 10px;\n    margin: ", ";\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    padding: 10px;\n  }\n  .time{\n    font-size: 1.2rem;\n    width: 94px;\n    margin: ", ";\n  }\n  div{\n    flex: 1;\n    text-align:", ";\n    flex-direction: ", ";\n    display: flex;\n    align-items: flex-end;\n  }\n  .message{\n    position: relative;\n    text-align: left;\n    white-space:pre-line;\n    border-radius: 10px;\n    padding: 10px 20px;\n    background-color:#f0f0f0;\n    display: inline-block;\n    max-width: 450px;\n    &::before{\n      content: \"\";\n      position: absolute;\n      top: 17px;\n      left: ", ";\n      right: ", ";\n      margin-top: -15px;\n      border: 15px solid transparent;\n      border-left: 30px solid #f0f0f0;\n      z-index: 0;\n      -webkit-transform: ", ";\n      transform: ", ";\n    }\n  }\n"])), function (props) { return props.isOwnMessage ? 'row-reverse' : 'initial'; }, function (props) { return props.isOwnMessage ? '0 0 0 20px' : '0 20px 0 0'; }, function (props) { return props.isOwnMessage ? '0 10px 0 0' : '0 0 0 10px'; }, function (props) { return props.isOwnMessage ? 'right' : 'left'; }, function (props) { return props.isOwnMessage ? 'row-reverse' : 'initial'; }, function (props) { return props.isOwnMessage ? 'auto' : '-26px'; }, function (props) { return props.isOwnMessage ? '-26px' : 'auto'; }, function (props) { return props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'; }, function (props) { return props.isOwnMessage ? 'rotate(-20deg)' : 'rotate(195deg)'; });
 var InputArea = styled_components_1["default"].div(templateObject_5 || (templateObject_5 = __makeTemplateObject(["\n  margin-top: 30px;\n  display:flex;\n  align-items:flex-end;\n"], ["\n  margin-top: 30px;\n  display:flex;\n  align-items:flex-end;\n"])));
-var Label = styled_components_1["default"].label(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\n  position:relative;\n  width: calc(100% - 70px);\n  span{\n    position: absolute;\n    font-size:1.5rem;\n    top: 24px;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  textarea{\n    width:100%;\n    -moz-appearance: none;\n    -webkit-appearance: none;\n    display:block;\n    appearance: none;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    border: none;\n    border-radius: 0;\n    height: 150px;\n    color: inherit;\n    font-family: inherit;\n    font-size: 1em;\n    padding: 25px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n"], ["\n  position:relative;\n  width: calc(100% - 70px);\n  span{\n    position: absolute;\n    font-size:1.5rem;\n    top: 24px;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  textarea{\n    width:100%;\n    -moz-appearance: none;\n    -webkit-appearance: none;\n    display:block;\n    appearance: none;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    border: none;\n    border-radius: 0;\n    height: 150px;\n    color: inherit;\n    font-family: inherit;\n    font-size: 1em;\n    padding: 25px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n"])), function (props) { return props.isEditing ? '10px' : '29px'; }, function (props) { return props.isEditing ? '1.2rem' : '1.5rem'; });
+var Label = styled_components_1["default"].label(templateObject_6 || (templateObject_6 = __makeTemplateObject(["\n  position:relative;\n  width: calc(100% - 70px);\n  span{\n    position: absolute;\n    font-size:1.5rem;\n    top: 24px;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  textarea{\n    width:100%;\n    display:block;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    height: 150px;\n    color: inherit;\n    font-size: 1.5rem;\n    padding: 25px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n"], ["\n  position:relative;\n  width: calc(100% - 70px);\n  span{\n    position: absolute;\n    font-size:1.5rem;\n    top: 24px;\n    left 15px;\n    color: #a0a0a0;\n    transition:all ease .1s;\n    top:", ";\n    font-size:", ";\n  }\n  textarea{\n    width:100%;\n    display:block;\n    background-color: #f0f0f0;\n    background-image: none;\n    letter-spacing: 0.05em;\n    height: 150px;\n    color: inherit;\n    font-size: 1.5rem;\n    padding: 25px 15px;\n    box-sizing: border-box;\n    resize:none;\n  }\n"])), function (props) { return props.isEditing ? '10px' : '29px'; }, function (props) { return props.isEditing ? '1.2rem' : '1.5rem'; });
 var SubmitButton = styled_components_1["default"].button(templateObject_7 || (templateObject_7 = __makeTemplateObject(["\n  flex:1;\n  background-color: #167edf;\n  color: #fff;\n  height: 35px;\n  transition:all ease .3s;\n  font-weight: bold;\n  &:hover{\n    opacity:0.7;\n  }\n"], ["\n  flex:1;\n  background-color: #167edf;\n  color: #fff;\n  height: 35px;\n  transition:all ease .3s;\n  font-weight: bold;\n  &:hover{\n    opacity:0.7;\n  }\n"])));
 var Button = styled_components_1["default"].button(templateObject_8 || (templateObject_8 = __makeTemplateObject(["\n  background-color: #167edf;\n  display: block;\n  color: #fff;\n  transition:all ease .3s;\n  font-weight: bold;\n  padding: 10px 15px;\n  &:hover{\n    opacity:0.7;\n  }\n"], ["\n  background-color: #167edf;\n  display: block;\n  color: #fff;\n  transition:all ease .3s;\n  font-weight: bold;\n  padding: 10px 15px;\n  &:hover{\n    opacity:0.7;\n  }\n"])));
 var templateObject_1, templateObject_2, templateObject_3, templateObject_4, templateObject_5, templateObject_6, templateObject_7, templateObject_8;
